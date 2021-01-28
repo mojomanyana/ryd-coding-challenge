@@ -3,6 +3,8 @@ import http from 'http';
 
 import * as config from '../config';
 import healthCheckRouter from '../routes/health-check.router';
+import issueRouter from '../routes/issue.router';
+import { connectToMongo } from './connect';
 
 class ExpressServer {
   private app: Application;
@@ -30,6 +32,7 @@ class ExpressServer {
     this.app = express();
     this.app.use(express.json());
     this.app.use('/health-check', healthCheckRouter);
+    this.app.use('/issue', issueRouter);
   }
 
   public initServer() {
@@ -37,7 +40,9 @@ class ExpressServer {
   }
 
   public listen() {
-    this.server.listen(config.PORT);
+    this.server.listen(config.PORT, () => {
+      connectToMongo(config.MONGO_URI, config.MONGO_DB);
+    });
   }
 }
 

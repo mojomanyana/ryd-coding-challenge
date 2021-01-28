@@ -16,6 +16,7 @@
   "author": "mojomanyana - nemanjaalavanja@gmail.com",
   "license": "ISC",
   "devDependencies": {
+    "@typegoose/typegoose": "^7.4.8",
     "@types/express": "4.17.8",
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.13",
