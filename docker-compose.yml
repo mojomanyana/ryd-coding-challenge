@@ -1,0 +1,12 @@
+version: "3"
+networks:
+  ryd-coding-challenge-network:
+services:
+  express-server:
+    networks:
+      - ryd-coding-challenge-network
+    build: .
+    environment:
+      PORT: 7080
+    ports:
+      - 7080:7080
