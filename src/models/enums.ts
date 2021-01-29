@@ -1,7 +1,7 @@
 enum IssueStatusType {
-  Unassigned = 1,
-  Assigned = 2,
-  Resolved = 3,
+  Unassigned = 'UNASSIGNED',
+  Assigned = 'ASSIGNED',
+  Resolved = 'RESOLVED',
 }
 
 export {

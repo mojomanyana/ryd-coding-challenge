@@ -11,7 +11,8 @@
     },
     "jsRules": {},
     "rules": {
-        "quotemark": [true, "single"]
+        "quotemark": [true, "single"],
+        "max-classes-per-file": false
     },
     "rulesDirectory": []
 }

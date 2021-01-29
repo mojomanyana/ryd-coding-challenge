@@ -1,7 +1,12 @@
 import mongoose from 'mongoose';
 
 const connectToMongo = async (dbUri: string, dbName?: string): Promise<void> => {
-    await mongoose.connect(dbUri, { dbName, useNewUrlParser: true, useUnifiedTopology: true });
+    await mongoose.connect(dbUri, {
+        dbName,
+        useCreateIndex: true,
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+    });
 };
 
 const disconnectFromMongo = async (): Promise<void> => {
