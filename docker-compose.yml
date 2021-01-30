@@ -8,6 +8,7 @@ services:
     build: .
     environment:
       PORT: 7080
+      MONGO_URI: mongodb://mongo:27017/
     ports:
       - 7080:7080
     links:
