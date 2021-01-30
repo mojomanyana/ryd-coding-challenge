@@ -2,6 +2,7 @@ import express, { Application } from 'express';
 import http from 'http';
 
 import * as config from '../config';
+import agentRouter from '../routes/agent.router';
 import healthCheckRouter from '../routes/health-check.router';
 import issueRouter from '../routes/issue.router';
 import { connectToMongo } from './connect';
@@ -33,6 +34,7 @@ class ExpressServer {
     this.app.use(express.json());
     this.app.use('/health-check', healthCheckRouter);
     this.app.use('/issue', issueRouter);
+    this.app.use('/agent', agentRouter);
   }
 
   public initServer() {

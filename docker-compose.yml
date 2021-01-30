@@ -10,3 +10,12 @@ services:
       PORT: 7080
     ports:
       - 7080:7080
+    links:
+      - mongo
+  mongo:
+    networks:
+      - ryd-coding-challenge-network
+    container_name: mongo
+    image: mongo
+    ports:
+      - 27017:27017

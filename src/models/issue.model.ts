@@ -4,17 +4,19 @@ import {
   prop,
   Ref,
 } from '@typegoose/typegoose';
-import { Agent } from './agent.model';
+import { Schema } from 'mongoose';
+import { Agent, OutputAgentDto } from './agent.model';
 import { IssueStatusType } from './enums';
 
 @modelOptions({
   schemaOptions: {
-      collection: 'issue',
-      toJSON: { virtuals: false },
+    collection: 'issue',
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   },
 })
 class Issue {
-  public static createInstance(createIssueDto: CreateIssueDto): Issue {
+  public static createInstance(createIssueDto: CreateIssueDto, agentToAssign?: Agent): Issue {
     if (!createIssueDto) {
       throw new Error('createIssueDto object must be provided');
     }
@@ -22,8 +24,16 @@ class Issue {
     const newInstance = new Issue(
       createIssueDto.title,
     );
+    if (agentToAssign) {
+      newInstance.agentAssigned = agentToAssign;
+    }
     return newInstance;
   }
+  @prop({ type: Date, required: true })
+  public createdAt: Date;
+
+  @prop({ type: Date, required: true })
+  public updatedAt: Date;
 
   @prop({ type: String, required: true })
   public title: string;
@@ -31,8 +41,10 @@ class Issue {
   @prop({ type: String, default: IssueStatusType.Unassigned, index: true, enum: IssueStatusType })
   public status: string;
 
-  @prop({ ref: Agent })
+  @prop({ ref: () => Agent })
   public agentAssigned?: Ref<Agent>;
+
+  public _id: Schema.Types.ObjectId;
 
   public constructor(
     title: string,
@@ -42,6 +54,8 @@ class Issue {
     }
 
     this.title = title;
+    this.createdAt = new Date();
+    this.updatedAt = new Date();
   }
 }
 
@@ -49,16 +63,27 @@ const IssueRepository = getModelForClass(Issue);
 const IssueModel = IssueRepository.model('Issue');
 
 class CreateIssueDto {
-  public title: string;
+  public title: Issue['title'];
 }
 
-class OutputIssueDto {
-  public title: string;
-  public status: IssueStatusType;
+class OutputIssueDto extends CreateIssueDto {
+  public status: Issue['status'];
+  public id: Issue['_id'];
+  public createdAt: Issue['createdAt'];
+  public updatedAt: Issue['updatedAt'];
+  public agentAssigned?: OutputAgentDto;
 
   constructor(issue: Issue) {
-    this.status = issue.status as IssueStatusType;
+    super();
+    this.status = issue.status;
     this.title = issue.title;
+    this.createdAt = issue.createdAt;
+    this.updatedAt = issue.updatedAt;
+    this.id = issue._id;
+
+    if (issue.agentAssigned) {
+      this.agentAssigned = new OutputAgentDto(issue.agentAssigned as Agent);
+    }
   }
 }
 

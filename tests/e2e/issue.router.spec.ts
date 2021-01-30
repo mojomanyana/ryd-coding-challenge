@@ -5,7 +5,7 @@ import { createTestMongoServer } from '../helpers/mongo-helper';
 let expressServer: ExpressServer;
 let mongod: MongoMemoryServer;
 
-describe('Should be able to access ExpressServer on endpoint /health-check', () => {
+describe('Should be able to access ExpressServer on endpoint /issue', () => {
   beforeAll(async () => {
     mongod = createTestMongoServer();
     await mongod.start();
@@ -39,7 +39,7 @@ describe('Should be able to access ExpressServer on endpoint /health-check', () 
 
   it('should execute GET /issue endpoint and return 200 with status DTO', async () => {
     const res = await supertest(expressServer.getServer())
-      .get('/issue')
+      .get('/issue');
     expect(res.status).toEqual(200);
     expect(res.body).toHaveProperty('issues');
     expect(res.body.issues.length).toEqual(1);
@@ -47,7 +47,7 @@ describe('Should be able to access ExpressServer on endpoint /health-check', () 
 
   it('should execute GET /issue endpoint and return 500 for invalid qs', async () => {
     const res = await supertest(expressServer.getServer())
-      .get('/issue?page=-100')
+      .get('/issue?page=-100');
     expect(res.status).toEqual(500);
     expect(res.body).toHaveProperty('error');
   });

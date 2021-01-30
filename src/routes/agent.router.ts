@@ -1,26 +1,26 @@
 import express, { Request, Response } from 'express';
-import issueService from '../services/issue.service';
+import agentService from '../services/agent.service';
 
-const issueRouter = express.Router();
+const agentRouter = express.Router();
 
-issueRouter.post('/', async (req: Request, res: Response) => {
+agentRouter.post('/', async (req: Request, res: Response) => {
   try {
-    const retVal = await issueService.createNewIssue({...req.body});
+    const retVal = await agentService.createNewAgent({...req.body});
     res.status(201).json(retVal);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-issueRouter.get('/', async (req: Request, res: Response) => {
+agentRouter.get('/', async (req: Request, res: Response) => {
   try {
     const page = req.query.page ? parseInt(req.query.page as string, 10) : 0;
     const size = req.query.size ? parseInt(req.query.size as string, 10) : 20;
-    const retVal = await issueService.listAllIssue(page, size);
+    const retVal = await agentService.listAllAgents(page, size);
     res.json(retVal);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-export default issueRouter;
+export default agentRouter;
