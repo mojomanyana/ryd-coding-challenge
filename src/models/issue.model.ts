@@ -72,6 +72,11 @@ class CreateIssueDto {
   public title: Issue['title'];
 }
 
+class UpdateIssueDto {
+  public id: Issue['_id'];
+  // Posibility to extend for future updates
+}
+
 class OutputIssueDto extends CreateIssueDto {
   public status: Issue['status'];
   public id: Issue['_id'];
@@ -112,6 +117,7 @@ export {
   Issue,
   IssueModel,
   CreateIssueDto,
+  UpdateIssueDto,
   OutputIssueDto,
   PaginatedIssuesDto,
 };

@@ -4,6 +4,7 @@ const connectToMongo = async (dbUri: string, dbName?: string): Promise<void> => 
     await mongoose.connect(dbUri, {
         dbName,
         useCreateIndex: true,
+        useFindAndModify: true,
         useNewUrlParser: true,
         useUnifiedTopology: true,
     });

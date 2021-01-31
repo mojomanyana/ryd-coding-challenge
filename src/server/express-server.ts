@@ -14,7 +14,6 @@ class ExpressServer {
   constructor() {
     this.initApp();
     this.initServer();
-    this.listen();
   }
 
   public getApp(): Application {
@@ -25,9 +24,16 @@ class ExpressServer {
     return this.server;
   }
 
-  public close() {
-    disconnectFromMongo();
-    this.server.close();
+  public async close(): Promise<void> {
+    return new Promise(async (resolve: any, reject: any): Promise<void> => {
+      await disconnectFromMongo();
+      this.server.close((err) => {
+        if (err) {
+          reject(err);
+        }
+        resolve();
+      });
+    });
   }
 
   public initApp() {
@@ -42,9 +48,12 @@ class ExpressServer {
     this.server = http.createServer(this.app);
   }
 
-  public listen() {
-    this.server.listen(config.PORT, () => {
-      connectToMongo(config.MONGO_URI, config.MONGO_DB);
+  public async listen(): Promise<void> {
+    return new Promise((resolve: any) => {
+      this.server.listen(config.PORT, async (): Promise<void> => {
+        await connectToMongo(config.MONGO_URI, config.MONGO_DB);
+        resolve();
+      });
     });
   }
 }

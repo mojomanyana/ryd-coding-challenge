@@ -9,9 +9,10 @@ beforeAll(async () => {
   mongod = createTestMongoServer();
   await mongod.start();
   expressServer = new ExpressServer();
+  expressServer.listen();
 });
 afterAll(async () => {
-  expressServer.close();
+  await expressServer.close();
   await mongod.stop();
 });
 describe('Should be able to access ExpressServer on endpoint /health-check', () => {

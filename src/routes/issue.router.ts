@@ -23,4 +23,13 @@ issueRouter.get('/', async (req: Request, res: Response) => {
   }
 });
 
+issueRouter.put('/', async (req: Request, res: Response) => {
+  try {
+    const retVal = await issueService.resolveIssue({...req.body});
+    res.json(retVal);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default issueRouter;

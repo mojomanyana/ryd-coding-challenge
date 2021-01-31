@@ -5,7 +5,9 @@ import agentService from '../../src/services/agent.service';
 
 const validAgent: any = { username: 'TestUsername' };
 const validIssue: any = { title: 'Test' };
-IssueRepository.find =
+
+beforeEach(() => {
+  IssueRepository.find =
   jest.fn().mockImplementation(() =>
     ({ sort: jest.fn().mockImplementation(() =>
       ({ limit: jest.fn().mockImplementation(() =>
@@ -13,7 +15,7 @@ IssueRepository.find =
       )}),
     )}),
   );
-
+});
 describe('Agent service unit testing', () => {
   it('Should create agent succesfuly', async () => {
     const spy1 = jest.spyOn(AgentRepository, 'create')

@@ -21,15 +21,13 @@ class AgentService {
     const retVal = await AgentRepository.create(newInstance) as Agent;
     if (openIssues && openIssues.length > 0) {
       await IssueRepository.findByIdAndUpdate(
-        openIssues[0]._id,
-        {
+        openIssues[0]._id, {
           agentAssigned: retVal,
           status: IssueStatusType.Assigned,
         },
       );
       (retVal.issueAssigned as Issue).status = IssueStatusType.Assigned;
     }
-
     return new OutputAgentDto(retVal);
   }
 
