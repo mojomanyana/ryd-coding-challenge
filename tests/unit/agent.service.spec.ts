@@ -1,45 +1,75 @@
 import { Agent, AgentRepository } from '../../src/models/agent.model';
 import { AgentStatusType } from '../../src/models/enums';
+import { Issue, IssueRepository } from '../../src/models/issue.model';
 import agentService from '../../src/services/agent.service';
 
 const validAgent: any = { username: 'TestUsername' };
+const validIssue: any = { title: 'Test' };
+IssueRepository.find =
+  jest.fn().mockImplementation(() =>
+    ({ sort: jest.fn().mockImplementation(() =>
+      ({ limit: jest.fn().mockImplementation(() =>
+        ({ exec: jest.fn().mockReturnValue(Promise.resolve([Issue.createInstance(validIssue, validAgent)])) }),
+      )}),
+    )}),
+  );
 
 describe('Agent service unit testing', () => {
   it('Should create agent succesfuly', async () => {
-    const spy = jest.spyOn(AgentRepository, 'create')
+    const spy1 = jest.spyOn(AgentRepository, 'create')
       .mockReturnValueOnce(
-        Promise.resolve(validAgent),
+        Promise.resolve(Agent.createInstance(validAgent, validIssue) as any),
       );
-    await agentService.createNewAgent(validAgent);
-    expect(spy).toHaveBeenCalledTimes(1);
-    spy.mockReset();
+    const spy2 = jest.spyOn(IssueRepository, 'findByIdAndUpdate')
+      .mockReturnValueOnce(
+        validIssue as any,
+      );
+    const retDto = await agentService.createNewAgent(validAgent);
+    expect(spy1).toHaveBeenCalledTimes(1);
+    expect(spy2).toHaveBeenCalledTimes(1);
+    expect(retDto).toBeDefined();
+    spy1.mockReset();
+    spy2.mockReset();
   });
 
   it('Should rethrow error for missing username upon creating new agent', async () => {
-    const spy = jest.spyOn(AgentRepository, 'create')
+    const spy1 = jest.spyOn(AgentRepository, 'create')
       .mockReturnValueOnce(
-        Promise.resolve(validAgent),
+        Promise.resolve(Agent.createInstance(validAgent, validIssue) as any),
+      );
+    const spy2 = jest.spyOn(IssueRepository, 'findByIdAndUpdate')
+      .mockReturnValueOnce(
+        validIssue as any,
       );
     try {
       await agentService.createNewAgent({ username: '' });
     } catch (err) {
       expect(err).toBeDefined();
       expect(err.message).toEqual('username for the agent must be provided');
-      expect(spy).toHaveBeenCalledTimes(0);
+      expect(spy1).toHaveBeenCalledTimes(0);
+      expect(spy2).toHaveBeenCalledTimes(0);
     } finally {
-      spy.mockReset();
+      spy1.mockReset();
+      spy2.mockReset();
     }
   });
 
   it('Should rethrow error if AgentRepository.create fails upon creating new agent', async () => {
-    const spy = jest.spyOn(AgentRepository, 'create').mockReturnValueOnce('Error' as any);
+    const spy1 = jest.spyOn(AgentRepository, 'create').mockRejectedValueOnce('Error' as any);
+    const spy2 = jest.spyOn(IssueRepository, 'findByIdAndUpdate')
+      .mockReturnValueOnce(
+        validIssue as any,
+      );
     try {
       await agentService.createNewAgent(validAgent);
     } catch (err) {
       expect(err).toBeDefined();
       expect(err).toEqual('Error');
+      expect(spy1).toHaveBeenCalledTimes(1);
+      expect(spy2).toHaveBeenCalledTimes(0);
     } finally {
-      spy.mockReset();
+      spy1.mockReset();
+      spy2.mockReset();
     }
   });
 

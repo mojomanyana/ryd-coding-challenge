@@ -1,14 +1,35 @@
 import { Agent, AgentRepository, CreateAgentDto, OutputAgentDto, PaginatedAgentsDto } from '../models/agent.model';
-import { AgentStatusType } from '../models/enums';
+import { AgentStatusType, IssueStatusType } from '../models/enums';
+import { Issue, IssueRepository } from '../models/issue.model';
 
 class AgentService {
   public async createNewAgent(
     createAgentDto: CreateAgentDto,
   ): Promise<OutputAgentDto> {
+    // Check first if there is some unassigned issue that this agent can take
+    const openIssues = await IssueRepository
+      .find({ status: IssueStatusType.Unassigned })
+      .sort({ createdAt: 1 })
+      .limit(1)
+      .exec();
+
     const newInstance = Agent.createInstance(
       createAgentDto,
+      (openIssues && openIssues.length > 0) ? openIssues[0] : undefined,
     );
-    const retVal = await AgentRepository.create(newInstance);
+
+    const retVal = await AgentRepository.create(newInstance) as Agent;
+    if (openIssues && openIssues.length > 0) {
+      await IssueRepository.findByIdAndUpdate(
+        openIssues[0]._id,
+        {
+          agentAssigned: retVal,
+          status: IssueStatusType.Assigned,
+        },
+      );
+      (retVal.issueAssigned as Issue).status = IssueStatusType.Assigned;
+    }
+
     return new OutputAgentDto(retVal);
   }
 

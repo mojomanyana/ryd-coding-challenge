@@ -1,10 +1,12 @@
 import {
   getModelForClass,
   modelOptions,
+  plugin,
   prop,
   Ref,
 } from '@typegoose/typegoose';
-import { Schema } from 'mongoose';
+import autopopulate from 'mongoose-autopopulate';
+import { v4 } from 'uuid';
 import { AgentStatusType } from './enums';
 import { Issue, OutputIssueDto } from './issue.model';
 
@@ -15,6 +17,7 @@ import { Issue, OutputIssueDto } from './issue.model';
     toObject: { virtuals: true },
   },
 })
+@plugin(autopopulate)
 class Agent {
   public static createInstance(createAgentDto: CreateAgentDto, issueToAssign?: Issue): Agent {
     if (!createAgentDto) {
@@ -26,25 +29,27 @@ class Agent {
     );
     if (issueToAssign) {
       newInstance.issueAssigned = issueToAssign;
+      newInstance.status = AgentStatusType.Working;
     }
     return newInstance;
   }
   @prop({ type: Date, required: true })
-  public createdAt: Date;
+  public createdAt!: Date;
 
   @prop({ type: Date, required: true })
-  public updatedAt: Date;
+  public updatedAt!: Date;
 
   @prop({ type: String, default: AgentStatusType.Free, index: true, enum: AgentStatusType })
-  public status: string;
+  public status!: string;
 
   @prop({ type: String, required: true, unique: true, index: true })
-  public username: string;
+  public username!: string;
 
-  @prop({ ref: () => Issue })
+  @prop({ autopopulate: { maxDepth: 1 }, ref: 'Issue', type: String })
   public issueAssigned?: Ref<Issue>;
 
-  public _id: Schema.Types.ObjectId;
+  @prop({ type: String, required: true })
+  public _id!: string;
 
   public constructor(
     username: string,
@@ -52,10 +57,10 @@ class Agent {
     if (!username || username.trim().length === 0) {
       throw new Error('username for the agent must be provided');
     }
-
     this.username = username;
     this.createdAt = new Date();
     this.updatedAt = new Date();
+    this._id = v4();
   }
 }
 

@@ -1,14 +1,33 @@
-import { IssueStatusType } from '../models/enums';
+import { Agent, AgentRepository } from '../models/agent.model';
+import { AgentStatusType, IssueStatusType } from '../models/enums';
 import { CreateIssueDto, Issue, IssueRepository, OutputIssueDto, PaginatedIssuesDto } from '../models/issue.model';
 
 class IssueService {
   public async createNewIssue(
     createIssueDto: CreateIssueDto,
   ): Promise<OutputIssueDto> {
+    // Check first if there is some free agent to take this issue
+    const freeAgents = await AgentRepository
+      .find({ status: AgentStatusType.Free })
+      .limit(1)
+      .exec();
+
     const newInstance = Issue.createInstance(
       createIssueDto,
+      (freeAgents && freeAgents.length > 0) ? freeAgents[0] : undefined,
     );
-    const retVal = await IssueRepository.create(newInstance);
+
+    const retVal = await IssueRepository.create(newInstance) as Issue;
+    if (freeAgents && freeAgents.length > 0) {
+      await AgentRepository.findByIdAndUpdate(
+        freeAgents[0]._id,
+        {
+          issueAssigned: retVal,
+          status: AgentStatusType.Working,
+        },
+      );
+      (retVal.agentAssigned as Agent).status = AgentStatusType.Working;
+    }
     return new OutputIssueDto(retVal);
   }
 

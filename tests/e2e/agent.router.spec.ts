@@ -5,17 +5,16 @@ import { createTestMongoServer } from '../helpers/mongo-helper';
 let expressServer: ExpressServer;
 let mongod: MongoMemoryServer;
 
+beforeAll(async () => {
+  mongod = createTestMongoServer();
+  await mongod.start();
+  expressServer = new ExpressServer();
+});
+afterAll(async () => {
+  expressServer.close();
+  await mongod.stop();
+});
 describe('Should be able to access ExpressServer on endpoint /agent', () => {
-  beforeAll(async () => {
-    mongod = createTestMongoServer();
-    await mongod.start();
-    expressServer = new ExpressServer();
-  });
-  afterAll(async () => {
-    expressServer.close();
-    await mongod.stop();
-  });
-
   it('should execute POST /agent endpoint and return 201 with status DTO', async () => {
     const res = await supertest(expressServer.getServer())
       .post('/agent')

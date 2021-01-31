@@ -5,7 +5,7 @@ import * as config from '../config';
 import agentRouter from '../routes/agent.router';
 import healthCheckRouter from '../routes/health-check.router';
 import issueRouter from '../routes/issue.router';
-import { connectToMongo } from './connect';
+import { connectToMongo, disconnectFromMongo } from './connect';
 
 class ExpressServer {
   private app: Application;
@@ -26,6 +26,7 @@ class ExpressServer {
   }
 
   public close() {
+    disconnectFromMongo();
     this.server.close();
   }
 

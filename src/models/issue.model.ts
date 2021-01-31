@@ -1,10 +1,12 @@
 import {
   getModelForClass,
   modelOptions,
+  plugin,
   prop,
   Ref,
 } from '@typegoose/typegoose';
-import { Schema } from 'mongoose';
+import autopopulate from 'mongoose-autopopulate';
+import { v4 } from 'uuid';
 import { Agent, OutputAgentDto } from './agent.model';
 import { IssueStatusType } from './enums';
 
@@ -15,6 +17,7 @@ import { IssueStatusType } from './enums';
     toObject: { virtuals: true },
   },
 })
+@plugin(autopopulate)
 class Issue {
   public static createInstance(createIssueDto: CreateIssueDto, agentToAssign?: Agent): Issue {
     if (!createIssueDto) {
@@ -26,25 +29,27 @@ class Issue {
     );
     if (agentToAssign) {
       newInstance.agentAssigned = agentToAssign;
+      newInstance.status = IssueStatusType.Assigned;
     }
     return newInstance;
   }
   @prop({ type: Date, required: true })
-  public createdAt: Date;
+  public createdAt!: Date;
 
   @prop({ type: Date, required: true })
-  public updatedAt: Date;
+  public updatedAt!: Date;
 
   @prop({ type: String, required: true })
-  public title: string;
+  public title!: string;
 
   @prop({ type: String, default: IssueStatusType.Unassigned, index: true, enum: IssueStatusType })
-  public status: string;
+  public status!: string;
 
-  @prop({ ref: () => Agent })
+  @prop({ autopopulate: { maxDepth: 1 }, ref: 'Agent', type: String })
   public agentAssigned?: Ref<Agent>;
 
-  public _id: Schema.Types.ObjectId;
+  @prop({ type: String, required: true})
+  public _id!: string;
 
   public constructor(
     title: string,
@@ -56,6 +61,7 @@ class Issue {
     this.title = title;
     this.createdAt = new Date();
     this.updatedAt = new Date();
+    this._id = v4();
   }
 }
 

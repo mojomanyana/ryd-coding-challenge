@@ -1,45 +1,73 @@
+import { Agent, AgentRepository } from '../../src/models/agent.model';
 import { IssueStatusType } from '../../src/models/enums';
 import { Issue, IssueRepository } from '../../src/models/issue.model';
 import issueService from '../../src/services/issue.service';
 
 const validIssue: any = { title: 'Test' };
+const validAgent: any = { username: 'TestUsername' };
+AgentRepository.find =
+  jest.fn().mockImplementation(() =>
+    ({ limit: jest.fn().mockImplementation(() =>
+      ({ exec: jest.fn().mockReturnValue(Promise.resolve([Agent.createInstance(validAgent, validIssue)])) }),
+    )}),
+  );
 
 describe('Issue service unit testing', () => {
   it('Should create issue succesfuly', async () => {
-    const spy = jest.spyOn(IssueRepository, 'create')
+    const spy1 = jest.spyOn(IssueRepository, 'create')
       .mockReturnValueOnce(
-        Promise.resolve(validIssue),
+        Promise.resolve(Issue.createInstance(validIssue, validAgent) as any),
       );
-    await issueService.createNewIssue(validIssue);
-    expect(spy).toHaveBeenCalledTimes(1);
-    spy.mockReset();
+    const spy2 = jest.spyOn(AgentRepository, 'findByIdAndUpdate')
+      .mockReturnValueOnce(
+        validAgent as any,
+      );
+    const retDto = await issueService.createNewIssue(validIssue);
+    expect(spy1).toHaveBeenCalledTimes(1);
+    expect(spy2).toHaveBeenCalledTimes(1);
+    expect(retDto).toBeDefined();
+    spy1.mockReset();
+    spy2.mockReset();
   });
 
   it('Should rethrow error for missing title upon creating new issue', async () => {
-    const spy = jest.spyOn(IssueRepository, 'create')
+    const spy1 = jest.spyOn(IssueRepository, 'create')
       .mockReturnValueOnce(
-        Promise.resolve(validIssue),
+        Promise.resolve(Issue.createInstance(validIssue, validAgent) as any),
+      );
+    const spy2 = jest.spyOn(AgentRepository, 'findByIdAndUpdate')
+      .mockReturnValueOnce(
+        validAgent as any,
       );
     try {
       await issueService.createNewIssue({ title: '' });
     } catch (err) {
       expect(err).toBeDefined();
       expect(err.message).toEqual('title for the issue must be provided');
-      expect(spy).toHaveBeenCalledTimes(0);
+      expect(spy1).toHaveBeenCalledTimes(0);
+      expect(spy2).toHaveBeenCalledTimes(0);
     } finally {
-      spy.mockReset();
+      spy1.mockReset();
+      spy2.mockReset();
     }
   });
 
   it('Should rethrow error if IssueRepository.create fails upon creating new issue', async () => {
-    const spy = jest.spyOn(IssueRepository, 'create').mockReturnValueOnce('Error' as any);
+    const spy1 = jest.spyOn(IssueRepository, 'create').mockRejectedValueOnce('Error' as any);
+    const spy2 = jest.spyOn(AgentRepository, 'findByIdAndUpdate')
+      .mockReturnValueOnce(
+        validAgent as any,
+      );
     try {
-      await issueService.createNewIssue({ title: 'Test' });
+      await issueService.createNewIssue(validIssue);
     } catch (err) {
       expect(err).toBeDefined();
       expect(err).toEqual('Error');
+      expect(spy1).toHaveBeenCalledTimes(1);
+      expect(spy2).toHaveBeenCalledTimes(0);
     } finally {
-      spy.mockReset();
+      spy1.mockReset();
+      spy2.mockReset();
     }
   });
 
