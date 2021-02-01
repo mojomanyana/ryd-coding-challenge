@@ -49,6 +49,7 @@ class Issue {
   public agentAssigned?: Ref<Agent>;
 
   @prop({ type: String, required: true})
+  // tslint:disable-next-line:variable-name
   public _id!: string;
 
   public constructor(

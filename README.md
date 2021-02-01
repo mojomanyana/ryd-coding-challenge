@@ -24,3 +24,13 @@ Short description how to setup this coding challenge.
 - Do `Setup local development` first
 - Run `docker-compose up` to spin up all services locally using docker
 - Once code is up and running You can verify that healt-check is returning 200 status code with body `{ status: 'OK' }` on the follwing URL: `http://localhost:7080/health-check/readiness`
+
+### Testing using POSTMAN
+- Do `Dockerization`
+- Import postman collection `RydCodingChallege.postman_collection.json` found in the root of the project for testing into Postman
+- In postmen collestion you can test following things: 
+  * List all issue
+  * List all agents
+  * Create agent
+  * Create issue
+  * Resolve issue (mark as done)
